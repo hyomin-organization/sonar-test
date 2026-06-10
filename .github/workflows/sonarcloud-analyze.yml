@@ -18,18 +18,28 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 자코코 테스트 및 소나클라우드 분석 실행
+      - name: 자코코 테스트 및 소나클라우드 분석 데이터 전송
         env:
-          # 🟢 깃허브 세팅에 등록한 비밀 토큰을 환경 변수로 안전하게 주입!
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           chmod +x ./gradlew
-          # 🟢 wait=true 옵션 덕분에 소나가 실패하면 이 스크립트 단계에서 빌드가 튕깁니다!
+          # 🟢 테스트가 실패해도 에러로 멈추지 않고 소나 전송까지 쭉 직진하게 만듭니다.
           ./gradlew clean test jacocoTestReport sonar \
             -Dsonar.projectKey=hyomin-organization_sonar-test \
             -Dsonar.organization=hyomin-organization \
-            -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.qualitygate.wait=true
+            -Dsonar.token=$SONAR_TOKEN 
+
+      # 🟢 2. 별도의 공식 플러그인을 사용해 소나클라우드의 품질 게이트 성적표를 기다립니다.
+      # 이 단계가 소나클라우드 대시보드 웹사이트에 '실패/성공'을 완벽히 마킹하고, 실패 시 깃허브 액션을 중단시킵니다.
+      - name: 소나클라우드 품질 게이트 검증 및 대시보드 마킹
+        uses: sonarsource/sonarcloud-github-action@v3.0.0
+        with:
+          # 소나클라우드가 판단을 내릴 때까지 기다려줍니다.
+          # 실패 시 이 Step에서 빌드가 튕기므로 아래에 있는 '정식 빌드'와 'deploy'는 자동으로 차단됩니다.
+          scanMetadataReportFile: build/sonar/report-task.txt
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
 
       # 🟢 소나가 통과되면, 서버에 보낼 순수 JAR 빌드 파일을 다시 뽑습니다.
       - name: 스프링 부트 정식 빌드 (JAR 생성)
