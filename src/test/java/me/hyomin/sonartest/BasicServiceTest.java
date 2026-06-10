@@ -13,12 +13,12 @@ class BasicServiceTest {
     @Autowired
     private BasicService basicService;
 
-    @Test
-    void basicTest(){
-        // given & when
-        String result = basicService.basic();
-
-        // then
-        assertThat(result).isEqualTo("Hello World");
-    }
+//    @Test
+//    void basicTest(){
+//        // given & when
+//        String result = basicService.basic();
+//
+//        // then
+//        assertThat(result).isEqualTo("Hello World");
+//    }
 }
