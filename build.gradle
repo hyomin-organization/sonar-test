@@ -1,0 +1,67 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.14'
+    id 'io.spring.dependency-management' version '1.1.7'
+
+    id "org.sonarqube" version "6.0.1.5171"
+    id 'jacoco'
+}
+
+group = 'me.hyomin'
+version = '0.0.1-SNAPSHOT'
+description = 'sonar-test'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+
+}
+
+jacocoTestReport {
+    dependsOn test // 리포트를 그리려면 당연히 테스트가 먼저 선행되어야 함
+
+    reports {
+        html.required = true  // 개발자가 로컬에서 디버깅할 때 볼 HTML 리포트
+        xml.required = true   // 소나큐브(SonarQube) 서버에 전송할 XML 리포트 (필수!)
+        csv.required = false  // 사용 빈도가 낮은 CSV는 비활성화
+    }
+
+    // 🟢 컴파일된 폴더 안에서 메인 클래스 파일(.class)을 자코코가 읽지 못하게 지워버립니다.
+    classDirectories.setFrom(
+            files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                        "**/SonarTestApplication.class",
+                        "**/*Application*.class"
+                ])
+            })
+    )
+
+}
+
+
+
+// 🟢 소나클라우드(SonarCloud) 연동 핵심 설정
+sonar {
+    properties {
+        // 1. 호환성 및 목적지 설정: 로컬 주소 대신 소나클라우드 공식 서버 주소를 박아줍니다.
+        property "sonar.host.url", "https://sonarcloud.io"
+        property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
+    }
+}
