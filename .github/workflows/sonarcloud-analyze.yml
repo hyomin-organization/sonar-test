@@ -55,6 +55,7 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
 
+
     steps:
       # 🟢 1번 컴퓨터가 저장해둔 금고에서 JAR 파일만 쏙 다운로드합니다. (체크아웃 필요 없음!)
       - name: 금고에서 JAR 파일 다운로드
