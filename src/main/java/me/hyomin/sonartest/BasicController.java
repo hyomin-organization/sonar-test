@@ -29,11 +29,11 @@ public class BasicController {
     public String basic4(){
         return basicService.basic4();
     }
-    @GetMapping("/")
+    @GetMapping("/5")
     public String basic5(){
         return basicService.basic5();
     }
-    @GetMapping("/")
+    @GetMapping("/6")
     public String basic6(){
         return basicService.basic6();
     }
