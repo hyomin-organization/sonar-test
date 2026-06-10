@@ -36,5 +36,95 @@ class BasicControllerTest {
 
     }
 
+    @Test
+    void basicTest2() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/2")
+                )
+                .andExpect(content().string("Hello World2"));
+
+    }
+
+    @Test
+    void basicTest3() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/3")
+                )
+                .andExpect(content().string("Hello World3"));
+
+    }
+
+    @Test
+    void basicTest4() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/4")
+                )
+                .andExpect(content().string("Hello World4"));
+
+    }
+
+    @Test
+    void basicTest5() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/5")
+                )
+                .andExpect(content().string("Hello World5"));
+
+    }
+
+    @Test
+    void basicTest6() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/6")
+                )
+                .andExpect(content().string("Hello World6"));
+
+    }
+
+    @Test
+    void basicTest7() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/7")
+                )
+                .andExpect(content().string("Hello World7"));
+
+    }
+
+    @Test
+    void basicTest8() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/8")
+                )
+                .andExpect(content().string("Hello World8"));
+
+    }
+
+    @Test
+    void basicTest9() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/9")
+                )
+                .andExpect(content().string("Hello World9"));
+
+    }
+
+    @Test
+    void basicTest10() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/10")
+                )
+                .andExpect(content().string("Hello World10"));
+
+    }
+
 
 }
