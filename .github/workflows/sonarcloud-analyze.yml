@@ -1,11 +1,11 @@
-name: SonarCloud Analysis
+name: SonarCloud Analysis & Deploy
 
 on:
   push:
     branches: [ "main", "develop" ] # 메인 브랜치에 코드가 push되면 자동으로 실행
 
-
 jobs:
+  # 1. 빌드 및 품질 검증 단계 (build)
   build:
     runs-on: ubuntu-latest
     steps:
@@ -30,31 +30,32 @@ jobs:
             -Dsonar.organization=hyomin-organization \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.qualitygate.wait=true
-      # 🟢 [추가] 소나가 통과되면, 서버에 보낼 순수 JAR 빌드 파일을 다시 뽑습니다.
+
+      # 🟢 소나가 통과되면, 서버에 보낼 순수 JAR 빌드 파일을 다시 뽑습니다.
       - name: 스프링 부트 정식 빌드 (JAR 생성)
         run: ./gradlew build -x test # 테스트는 위에서 했으니 제외
 
-      # 🟢 [추가] 생성된 JAR 파일을 깃허브 가상 금고에 안전하게 보관합니다.
+      # 🟢 생성된 JAR 파일을 깃허브 가상 금고에 안전하게 보관합니다.
       - name: 빌드 결과물(JAR)을 금고에 업로드
         uses: actions/upload-artifact@v4
         with:
           name: spring-boot-app
           path: build/libs/*-SNAPSHOT.jar
 
-  # 2. 실제 서버 배포 단계 (deploy) - 들여쓰기 교정 완료!
+  # 2. 실제 서버 배포 단계 (deploy)
   deploy:
     needs: build # 🚨 빌드가 100% 성공(소나 통과)해야만 배포를 시작합니다.
     runs-on: ubuntu-latest
 
     steps:
-      # 🟢 [추가] 1번 컴퓨터가 저장해둔 금고에서 JAR 파일만 쏙 다운로드합니다. (체크아웃 필요 없음!)
+      # 🟢 1번 컴퓨터가 저장해둔 금고에서 JAR 파일만 쏙 다운로드합니다. (체크아웃 필요 없음!)
       - name: 금고에서 JAR 파일 다운로드
         uses: actions/download-artifact@v4
         with:
           name: spring-boot-app
           path: build/libs
 
-      # 🟢 [추가] 다운로드받은 뜨끈뜨끈한 JAR 파일을 EC2 서버로 전송합니다.
+      # 🟢 다운로드받은 뜨끈뜨끈한 JAR 파일을 EC2 서버로 전송합니다.
       - name: JAR 파일을 EC2 서버로 전송
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -65,7 +66,7 @@ jobs:
           target: "/home/ubuntu/app"
           strip_components: 2
 
-      # 🟢 [추가] EC2 서버에 원격 접속해서 구버전을 끄고 신버전을 켭니다.
+      # 🟢 EC2 서버에 원격 접속해서 구버전을 끄고 신버전을 켭니다.
       - name: EC2 서버에서 스프링 부트 재구동
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -73,7 +74,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            # 🟢 [추가] EC2 서버에 자바(Java 17)가 설치되어 있는지 체크하고 없으면 자동 설치
+            # 1. EC2 서버에 자바(Java 17)가 설치되어 있는지 체크하고 없으면 자동 설치
             if ! type java > /dev/null 2>&1; then
               echo "> EC2 서버에 자바가 없습니다. Java 17 설치를 시작합니다..."
               sudo apt-get update -y
@@ -85,18 +86,41 @@ jobs:
             mkdir -p /home/ubuntu/app
             cd /home/ubuntu/app
 
-            # 1. 구동 중인 기존 스프링 부트 프로세스가 있다면 안전하게 종료(kill -15)
+            # 2. 구동 중인 기존 스프링 부트 프로세스가 있다면 안전하게 종료
             CURRENT_PID=$(pgrep -f .*-SNAPSHOT.jar)
             if [ -z "$CURRENT_PID" ]; then
               echo "> 현재 구동 중인 애플리케이션이 없으므로 종료하지 않습니다."
             else
               echo "> 기존 애플리케이션 종료: kill -15 $CURRENT_PID"
-              kill -15 $CURRENT_PID
-              sleep 5
+            
+              # 🟢 [수정 핵심 1] kill 뒤에 || true를 붙여 기존 앱 종료 시그널(143)로 인해 전체 스크립트가 도중에 폭사하는 현상을 방지합니다.
+              kill -15 $CURRENT_PID || true
+            
+              echo "> 애플리케이션이 종료되기를 7초간 대기합니다..."
+              sleep 7
+            
+              # 혹시 7초 뒤에도 구버전 프로세스가 안 죽고 살아있다면 확실하게 확인 사살
+              if pgrep -f .*-SNAPSHOT.jar > /dev/null; then
+                echo "> kill -15로 종료되지 않아 강제 종료(kill -9)합니다."
+                kill -9 $(pgrep -f .*-SNAPSHOT.jar) || true
+              fi
             fi
 
-            # 2. 전송받은 새 JAR 파일을 백그라운드 구동시키고 로그를 nohup.out에 남깁니다.
+            # 3. 구버전 JAR 파일 정리 및 이번 배포 타겟 파일 확보
+            mkdir -p old_jars
+            LATEST_JAR=$(ls -t ./*-SNAPSHOT.jar 2>/dev/null | head -n 1)
+            if [ -n "$LATEST_JAR" ]; then
+              echo "> 이번에 배포할 최신 JAR: $LATEST_JAR"
+              # 새로 들어온 최신 JAR를 제외한 나머지 찌꺼기 파일들은 전부 백업 폴더로 격리
+              ls ./*-SNAPSHOT.jar 2>/dev/null | grep -v "$LATEST_JAR" | xargs -I {} mv {} ./old_jars/ 2>/dev/null || true
+            fi
+
+            # 4. 전송받은 새 JAR 파일을 백그라운드 구동시키고 로그를 nohup.out에 남깁니다.
             echo "> 새 애플리케이션 배포 및 실행"
-            nohup java -jar *-SNAPSHOT.jar > nohup.out 2>&1 &
+            
+            # 🟢 [수정 핵심 2] < /dev/null 을 추가하여 표준 입력을 끊어줍니다. SSH 플러그인이 커넥션을 안전하게 회수하고 퇴근할 수 있게 만듭니다.
+            nohup java -jar "$LATEST_JAR" < /dev/null > nohup.out 2>&1 &
+            
+            # 5. 안정적인 인프라 안착을 위한 마무리 마크
             sleep 3
-            echo "> 배포 스크립트 실행 완료!"
+            echo "> 🟢 배포 스크립트가 에러 없이 완벽하게 완료되었습니다!"
