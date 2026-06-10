@@ -98,3 +98,5 @@ jobs:
             # 2. 전송받은 새 JAR 파일을 백그라운드 구동시키고 로그를 nohup.out에 남깁니다.
             echo "> 새 애플리케이션 배포 및 실행"
             nohup java -jar *-SNAPSHOT.jar > nohup.out 2>&1 &
+            sleep 3
+            echo "> 배포 스크립트 실행 완료!"
