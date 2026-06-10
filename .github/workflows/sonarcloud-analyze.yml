@@ -72,6 +72,15 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
           script: |
+            # 🟢 [추가] EC2 서버에 자바(Java 17)가 설치되어 있는지 체크하고 없으면 자동 설치
+            if ! type java > /dev/null 2>&1; then
+              echo "> EC2 서버에 자바가 없습니다. Java 17 설치를 시작합니다..."
+              sudo apt-get update -y
+              sudo apt-get install -y openjdk-17-jdk
+            else
+              echo "> EC2 서버에 이미 자바가 설치되어 있습니다."
+            fi
+            
             mkdir -p /home/ubuntu/app
             cd /home/ubuntu/app
 
