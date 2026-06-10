@@ -22,6 +22,7 @@ jobs:
           # 🟢 깃허브 세팅에 등록한 비밀 토큰을 환경 변수로 안전하게 주입!
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          chmod +x ./gradlew
           ./gradlew clean test jacocoTestReport sonar \
             -Dsonar.projectKey=hyomin-organization_sonar-test \
             -Dsonar.organization=hyomin-organization \
