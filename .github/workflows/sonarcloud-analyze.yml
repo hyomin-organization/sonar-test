@@ -2,7 +2,11 @@ name: SonarCloud Analysis & Deploy
 
 on:
   push:
-    branches: [ "main", "develop" ] # 메인 브랜치에 코드가 push되면 자동으로 실행
+    branches: [ "main", "develop" ]
+  # 🟢 [추가] main과 develop 브랜치로 향하는 Pull Request가 열리거나 코드가 업데이트되면 이 파이프라인을 실행합니다.
+  pull_request:
+    branches: [ "main", "develop" ]
+    types: [opened, synchronize, reopened]
 
 jobs:
   # 1. 빌드 및 품질 검증 단계 (build)
@@ -47,6 +51,8 @@ jobs:
   # 2. 실제 서버 배포 단계 (deploy)
   deploy:
     needs: build # 🚨 빌드가 100% 성공(소나 통과)해야만 배포를 시작합니다.
+    # 🟢 [추가] 현재 실행된 트리거가 pull_request가 '아닌' 경우에만 배포 단계를 실행합니다.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
