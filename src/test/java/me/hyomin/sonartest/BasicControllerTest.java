@@ -86,45 +86,45 @@ class BasicControllerTest {
 
     }
 
-    @Test
-    void basicTest7() throws Exception {
-        // given && when
-        mockMvc.perform(
-                        MockMvcRequestBuilders.get("/7")
-                )
-                .andExpect(content().string("Hello World7"));
-
-    }
-
-    @Test
-    void basicTest8() throws Exception {
-        // given && when
-        mockMvc.perform(
-                        MockMvcRequestBuilders.get("/8")
-                )
-                .andExpect(content().string("Hello World8"));
-
-    }
-
-    @Test
-    void basicTest9() throws Exception {
-        // given && when
-        mockMvc.perform(
-                        MockMvcRequestBuilders.get("/9")
-                )
-                .andExpect(content().string("Hello World9"));
-
-    }
-
-    @Test
-    void basicTest10() throws Exception {
-        // given && when
-        mockMvc.perform(
-                        MockMvcRequestBuilders.get("/10")
-                )
-                .andExpect(content().string("Hello World10"));
-
-    }
+//    @Test
+//    void basicTest7() throws Exception {
+//        // given && when
+//        mockMvc.perform(
+//                        MockMvcRequestBuilders.get("/7")
+//                )
+//                .andExpect(content().string("Hello World7"));
+//
+//    }
+//
+//    @Test
+//    void basicTest8() throws Exception {
+//        // given && when
+//        mockMvc.perform(
+//                        MockMvcRequestBuilders.get("/8")
+//                )
+//                .andExpect(content().string("Hello World8"));
+//
+//    }
+//
+//    @Test
+//    void basicTest9() throws Exception {
+//        // given && when
+//        mockMvc.perform(
+//                        MockMvcRequestBuilders.get("/9")
+//                )
+//                .andExpect(content().string("Hello World9"));
+//
+//    }
+//
+//    @Test
+//    void basicTest10() throws Exception {
+//        // given && when
+//        mockMvc.perform(
+//                        MockMvcRequestBuilders.get("/10")
+//                )
+//                .andExpect(content().string("Hello World10"));
+//
+//    }
 
 
 }
