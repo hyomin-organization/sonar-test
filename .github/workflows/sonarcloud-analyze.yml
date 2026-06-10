@@ -23,7 +23,68 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           chmod +x ./gradlew
+          # 🟢 wait=true 옵션 덕분에 소나가 실패하면 이 스크립트 단계에서 빌드가 튕깁니다!
           ./gradlew clean test jacocoTestReport sonar \
             -Dsonar.projectKey=hyomin-organization_sonar-test \
             -Dsonar.organization=hyomin-organization \
-            -Dsonar.token=$SONAR_TOKEN
+            -Dsonar.token=$SONAR_TOKEN \
+            -Dsonar.qualitygate.wait=true
+      # 🟢 [추가] 소나가 통과되면, 서버에 보낼 순수 JAR 빌드 파일을 다시 뽑습니다.
+      - name: 스프링 부트 정식 빌드 (JAR 생성)
+        run: ./gradlew build -x test # 테스트는 위에서 했으니 제외
+
+      # 🟢 [추가] 생성된 JAR 파일을 깃허브 가상 금고에 안전하게 보관합니다.
+      - name: 빌드 결과물(JAR)을 금고에 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: spring-boot-app
+          path: build/libs/*-SNAPSHOT.jar
+
+  # 2. 실제 서버 배포 단계 (deploy) - 들여쓰기 교정 완료!
+  deploy:
+    needs: build # 🚨 빌드가 100% 성공(소나 통과)해야만 배포를 시작합니다.
+    runs-on: ubuntu-latest
+
+    steps:
+      # 🟢 [추가] 1번 컴퓨터가 저장해둔 금고에서 JAR 파일만 쏙 다운로드합니다. (체크아웃 필요 없음!)
+      - name: 금고에서 JAR 파일 다운로드
+        uses: actions/download-artifact@v4
+        with:
+          name: spring-boot-app
+          path: build/libs
+
+      # 🟢 [추가] 다운로드받은 뜨끈뜨끈한 JAR 파일을 EC2 서버로 전송합니다.
+      - name: JAR 파일을 EC2 서버로 전송
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "build/libs/*-SNAPSHOT.jar"
+          target: "/home/ubuntu/app"
+          strip_components: 2
+
+      # 🟢 [추가] EC2 서버에 원격 접속해서 구버전을 끄고 신버전을 켭니다.
+      - name: EC2 서버에서 스프링 부트 재구동
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            mkdir -p /home/ubuntu/app
+            cd /home/ubuntu/app
+
+            # 1. 구동 중인 기존 스프링 부트 프로세스가 있다면 안전하게 종료(kill -15)
+            CURRENT_PID=$(pgrep -f .*-SNAPSHOT.jar)
+            if [ -z "$CURRENT_PID" ]; then
+              echo "> 현재 구동 중인 애플리케이션이 없으므로 종료하지 않습니다."
+            else
+              echo "> 기존 애플리케이션 종료: kill -15 $CURRENT_PID"
+              kill -15 $CURRENT_PID
+              sleep 5
+            fi
+
+            # 2. 전송받은 새 JAR 파일을 백그라운드 구동시키고 로그를 nohup.out에 남깁니다.
+            echo "> 새 애플리케이션 배포 및 실행"
+            nohup java -jar *-SNAPSHOT.jar > nohup.out 2>&1 &
