@@ -38,7 +38,7 @@ jacocoTestReport {
 
     reports {
         html.required = false  // 개발자가 로컬에서 디버깅할 때 볼 HTML 리포트
-        xml.required = false   // 소나큐브(SonarQube) 서버에 전송할 XML 리포트 (필수!)
+        xml.required = true   // 소나큐브(SonarQube) 서버에 전송할 XML 리포트 (필수!)
         csv.required = false  // 사용 빈도가 낮은 CSV는 비활성화
     }
 
