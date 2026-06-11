@@ -1,22 +1,11 @@
 package me.hyomin.sonartest;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
@@ -86,45 +75,45 @@ class BasicControllerTest {
 
     }
 
-//    @Test
-//    void basicTest7() throws Exception {
-//        // given && when
-//        mockMvc.perform(
-//                        MockMvcRequestBuilders.get("/7")
-//                )
-//                .andExpect(content().string("Hello World7"));
-//
-//    }
-//
-//    @Test
-//    void basicTest8() throws Exception {
-//        // given && when
-//        mockMvc.perform(
-//                        MockMvcRequestBuilders.get("/8")
-//                )
-//                .andExpect(content().string("Hello World8"));
-//
-//    }
-//
-//    @Test
-//    void basicTest9() throws Exception {
-//        // given && when
-//        mockMvc.perform(
-//                        MockMvcRequestBuilders.get("/9")
-//                )
-//                .andExpect(content().string("Hello World9"));
-//
-//    }
-//
-//    @Test
-//    void basicTest10() throws Exception {
-//        // given && when
-//        mockMvc.perform(
-//                        MockMvcRequestBuilders.get("/10")
-//                )
-//                .andExpect(content().string("Hello World10"));
-//
-//    }
+    @Test
+    void basicTest7() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/7")
+                )
+                .andExpect(content().string("Hello World7"));
+
+    }
+
+    @Test
+    void basicTest8() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/8")
+                )
+                .andExpect(content().string("Hello World8"));
+
+    }
+
+    @Test
+    void basicTest9() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/9")
+                )
+                .andExpect(content().string("Hello World9"));
+
+    }
+
+    @Test
+    void basicTest10() throws Exception {
+        // given && when
+        mockMvc.perform(
+                        MockMvcRequestBuilders.get("/10")
+                )
+                .andExpect(content().string("Hello World10"));
+
+    }
 
 
 }

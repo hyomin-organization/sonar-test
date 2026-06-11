@@ -1,6 +1,7 @@
 name: SonarCloud Analysis & Deploy
 
 on:
+  # main, develop branch
   push:
     branches: [ "main", "develop" ]
   # 🟢 [추가] main과 develop 브랜치로 향하는 Pull Request가 열리거나 코드가 업데이트되면 이 파이프라인을 실행합니다.

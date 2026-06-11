@@ -31,26 +31,22 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
-
 }
 
 jacocoTestReport {
     dependsOn test // 리포트를 그리려면 당연히 테스트가 먼저 선행되어야 함
 
     reports {
-        html.required = true  // 개발자가 로컬에서 디버깅할 때 볼 HTML 리포트
-        xml.required = true   // 소나큐브(SonarQube) 서버에 전송할 XML 리포트 (필수!)
+        html.required = false  // 개발자가 로컬에서 디버깅할 때 볼 HTML 리포트
+        xml.required = false   // 소나큐브(SonarQube) 서버에 전송할 XML 리포트 (필수!)
         csv.required = false  // 사용 빈도가 낮은 CSV는 비활성화
     }
 
 }
 
-
-
 // 🟢 소나클라우드(SonarCloud) 연동 핵심 설정
 sonar {
     properties {
-        // 1. 호환성 및 목적지 설정: 로컬 주소 대신 소나클라우드 공식 서버 주소를 박아줍니다.
         property "sonar.host.url", "https://sonarcloud.io"
         property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
     }
