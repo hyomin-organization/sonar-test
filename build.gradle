@@ -37,11 +37,43 @@ jacocoTestReport {
     dependsOn test // 리포트를 그리려면 당연히 테스트가 먼저 선행되어야 함
 
     reports {
-        html.required = false  // 개발자가 로컬에서 디버깅할 때 볼 HTML 리포트
+        html.required = true  // 개발자가 로컬에서 디버깅할 때 볼 HTML 리포트
         xml.required = true   // 소나큐브(SonarQube) 서버에 전송할 XML 리포트 (필수!)
         csv.required = false  // 사용 빈도가 낮은 CSV는 비활성화
     }
 
+    // [중요] JaCoCo 리포트 생성 시 dto와 config 패키지 산출물 자체를 제외
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "me/hyomin/sonartest/dto/**",
+                    "me/hyomin/sonartest/config/**",
+                    "**/SonartestApplication.class" // 메인 메서드 클래스 제외
+            ])
+        }))
+    }
+
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS'
+
+            // [중요] 빌드 시 커버리지 통과 조건 검증 검사에서 dto와 config 제외
+            excludes = [
+                    "me.hyomin.sonartest.dto.*",
+                    "me.hyomin.sonartest.config.*",
+                    "*.SonartestApplication"
+            ]
+
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.80 // 제외된 파일을 빼고 커버리지 80% 달성해야 빌드 성공
+            }
+        }
+    }
 }
 
 // 🟢 소나클라우드(SonarCloud) 연동 핵심 설정
@@ -49,5 +81,9 @@ sonar {
     properties {
         property "sonar.host.url", "https://sonarcloud.io"
         property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
+
+        // 정적 분석 및 커버리지 계산 시외 제외할 경로 정의
+        property "sonar.exclusions", "**/config/**, **/*Application.java"
+        property "sonar.coverage.exclusions", "**/dto/**"
     }
 }
