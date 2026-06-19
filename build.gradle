@@ -48,7 +48,7 @@ jacocoTestReport {
             fileTree(dir: it, exclude: [
                     "me/hyomin/sonartest/dto/**",
                     "me/hyomin/sonartest/config/**",
-                    "**/SonartestApplication.class" // 메인 메서드 클래스 제외
+                    "**/SonarTestApplication*" // 메인 메서드 클래스 제외
             ])
         }))
     }
@@ -64,7 +64,7 @@ jacocoTestCoverageVerification {
             excludes = [
                     "me.hyomin.sonartest.dto.*",
                     "me.hyomin.sonartest.config.*",
-                    "*.SonartestApplication"
+                    "*SonarTestApplication*"
             ]
 
             limit {
